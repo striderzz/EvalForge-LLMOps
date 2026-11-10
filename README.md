@@ -1,4 +1,4 @@
-# Assay
+# Assay – LLM Eval
 
 **An evaluation and guardrails platform for LLM apps: regression-test prompts, RAG pipelines and agents before every deploy**
 
@@ -48,7 +48,7 @@ flowchart LR
 ## Planned repository structure
 
 ```
-Assay/
+assay-llm-eval/
 ├── assay/            # core: runner, scorers, judges, datasets
 ├── server/               # FastAPI results API
 ├── dashboard/            # React + Vite UI
