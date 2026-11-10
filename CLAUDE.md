@@ -1,4 +1,4 @@
-# CLAUDE.md: Assay build guide
+# CLAUDE.md: Deckard build guide
 
 This file tells Claude (Claude Code) how to build this project. Read **README.md** first: it is the design spec. This file is the build plan.
 
@@ -12,14 +12,14 @@ Python 3.11, asyncio + httpx, Pydantic, Typer CLI, LiteLLM (multi-provider), RAG
 
 ## Build order (phases)
 
-1. Scaffold `assay/` package, Typer CLI (`assay run`), YAML suite schema, example suite.
+1. Scaffold `deckard/` package, Typer CLI (`deckard run`), YAML suite schema, example suite.
 2. Async runner with rate limiting, retries and caching; provider adapters via LiteLLM + generic HTTP target.
 3. Deterministic scorers (schema, regex, exact/fuzzy match) and RAG scorers.
 4. LLM-as-a-judge rubrics + calibration against a small human-labelled set (Cohen's kappa).
 5. Synthetic and red-team case generation (injection, jailbreak, PII leak).
 6. Results API on PostgreSQL + React dashboard with run-to-run diffs.
 7. GitHub Action that runs a suite and comments a score diff on the PR; fail thresholds.
-8. Case study in `examples/`: a sample RAG app where Assay catches a real regression; numbers in README.
+8. Case study in `examples/`: a sample RAG app where Deckard catches a real regression; numbers in README.
 
 ## Working rules for Claude
 

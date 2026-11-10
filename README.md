@@ -1,4 +1,4 @@
-# Assay – LLM Eval
+# Deckard – LLM Eval
 
 **An evaluation and guardrails platform for LLM apps: regression-test prompts, RAG pipelines and agents before every deploy**
 
@@ -12,7 +12,7 @@ Python · FastAPI · LLM-as-a-judge · RAGAS · OpenTelemetry · PostgreSQL · R
 
 Teams ship LLM features and only find out about regressions from users. Common causes are a prompt change that breaks tone, a new model version that hallucinates more, or a retriever change that drops recall.
 
-Assay is the tool a forward-deployed engineer brings to a customer. You point it at an LLM endpoint, give it a dataset of test cases, and it:
+Deckard is the tool a forward-deployed engineer brings to a customer. You point it at an LLM endpoint, give it a dataset of test cases, and it:
 - runs the cases against one or more models or prompt versions;
 - scores them with deterministic checks (JSON schema, regex, exact match), **LLM-as-a-judge** rubrics with calibration, and RAG metrics;
 - **fails the CI build** if quality, safety, cost or latency go past a threshold;
@@ -48,8 +48,8 @@ flowchart LR
 ## Planned repository structure
 
 ```
-assay-llm-eval/
-├── assay/            # core: runner, scorers, judges, datasets
+deckard-llm-eval/
+├── deckard/            # core: runner, scorers, judges, datasets
 ├── server/               # FastAPI results API
 ├── dashboard/            # React + Vite UI
 ├── action/               # GitHub Action wrapper
@@ -60,7 +60,7 @@ assay-llm-eval/
 
 ## Roadmap
 
-- [ ] Core runner + YAML suite format + CLI (`assay run`)
+- [ ] Core runner + YAML suite format + CLI (`deckard run`)
 - [ ] Deterministic and RAG scorers
 - [ ] LLM-as-a-judge with calibration against human labels
 - [ ] Synthetic + red-team case generation
