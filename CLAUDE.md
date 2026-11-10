@@ -1,17 +1,17 @@
-# CLAUDE.md: Deckard build guide
+# CLAUDE.md: EvalForge LLMOps build guide
 
 This file tells Claude (Claude Code) how to build this project. Read **README.md** first: it is the design spec. This file is the build plan. **INFO.md** is the interview prep companion; keep it in sync when a design decision changes.
 
 ## Goal
 
-Regression testing for LLM apps. Point Deckard at any LLM app (HTTP endpoint or provider SDK) plus a YAML test suite, and it runs the cases, scores them, stores the results, and reports regressions against a baseline. Scorers: exact/regex/JSON Schema checks, LLM-as-a-judge with a rubric and calibration against a small human-labeled set (report judge-human agreement as Cohen's kappa), RAG metrics (faithfulness, answer relevance, context precision, context recall, RAGAS-style), and a red-team pack (prompt injection, jailbreak, PII leakage). A GitHub Action runs a suite on a PR and fails it when scores drop past a threshold. A small dashboard shows runs, diffs and cost. Case study: evaluating `striderzz/RAG_Project1` before and after a change.
+Regression testing for LLM apps. Point EvalForge at any LLM app (HTTP endpoint or provider SDK) plus a YAML test suite, and it runs the cases, scores them, stores the results, and reports regressions against a baseline. Scorers: exact/regex/JSON Schema checks, LLM-as-a-judge with a rubric and calibration against a small human-labeled set (report judge-human agreement as Cohen's kappa), RAG metrics (faithfulness, answer relevance, context precision, context recall, RAGAS-style), and a red-team pack (prompt injection, jailbreak, PII leakage). A GitHub Action runs a suite on a PR and fails it when scores drop past a threshold. A small dashboard shows runs, diffs and cost. Case study: evaluating `striderzz/RAG_Project1` before and after a change.
 
 Scope is sized for one person in 2 to 4 weeks. Anything not listed here goes under Stretch goals, not into the core.
 
 ## Tech stack
 
 - Python 3.11, uv for dependencies, ruff + black, type hints
-- Typer CLI: `deckard run`, `deckard compare`, plus `calibrate`, `baseline save` and `serve`
+- Typer CLI: `evalforge run`, `evalforge compare`, plus `calibrate`, `baseline save` and `serve`
 - Pydantic v2 for suites, results and judge output; PyYAML (`safe_load`); jsonschema
 - httpx (async) for HTTP targets
 - Official `anthropic` and `openai` SDKs (no multi-provider wrapper)
@@ -25,12 +25,12 @@ Scope is sized for one person in 2 to 4 weeks. Anything not listed here goes und
 
 ## Build order (phases)
 
-1. Package scaffold, Pydantic suite schema, `deckard run`, target adapters (HTTP, Anthropic, OpenAI), deterministic scorers (exact, regex, JSON Schema), SQLite store, pytest, `ci.yml`.
+1. Package scaffold, Pydantic suite schema, `evalforge run`, target adapters (HTTP, Anthropic, OpenAI), deterministic scorers (exact, regex, JSON Schema), SQLite store, pytest, `ci.yml`.
 2. LLM judge: rubrics in `rubrics/`, structured output through a forced tool call, judge cache keyed on a hash of everything that affects the verdict, token and USD logging per call (`pricing.yaml`), per-run budget cap, resume.
-3. Calibration: hand-labeled set in `calibration/labels.yaml`, `deckard calibrate`, Cohen's kappa with bootstrap CI for Haiku and Opus, confusion matrix, Opus escalation for boundary scores.
+3. Calibration: hand-labeled set in `calibration/labels.yaml`, `evalforge calibrate`, Cohen's kappa with bootstrap CI for Haiku and Opus, confusion matrix, Opus escalation for boundary scores.
 4. RAG metrics: faithfulness, answer relevance (OpenAI embeddings, judge fallback), context precision, context recall.
 5. Red-team pack in `suites/redteam/`: prompt injection (direct and indirect, canary strings), jailbreak (judge rubric, app-policy probes only), PII leakage (seeded synthetic PII, regex + Luhn).
-6. `deckard compare` (per-scorer deltas, bootstrap CI, new failures, Opus re-judge of flips, Markdown output, exit code), committed baselines in `baselines/` via `deckard baseline save`, composite GitHub Action and `eval.yml`.
+6. `evalforge compare` (per-scorer deltas, bootstrap CI, new failures, Opus re-judge of flips, Markdown output, exit code), committed baselines in `baselines/` via `evalforge baseline save`, composite GitHub Action and `eval.yml`.
 7. FastAPI read API and Next.js dashboard: runs list, run detail, compare, calibration, cost. Run `/unslop` before calling it done.
 8. Case study: adapter in `examples/rag_project1/`, suite with reference answers plus the red-team pack, runs before and after one change, write-up and real numbers in README.
 
@@ -65,7 +65,7 @@ Do not start these until Phase 8 is done.
 ## Definition of done (whole project)
 
 - `make up` (or the documented command) brings up the API and dashboard in one step
-- `deckard run` and `deckard compare` work on the example and case-study suites
+- `evalforge run` and `evalforge compare` work on the example and case-study suites
 - The GitHub Action fails a PR on a real regression in the case study
 - README has a real architecture diagram, setup steps, screenshots and measured results, including judge-human kappa and cost per 100 cases
 - CI is green, tests cover the core logic

@@ -1,4 +1,4 @@
-# Deckard – LLM Eval: interview prep
+# EvalForge LLMOps: interview prep
 
 Companion to [README.md](README.md). Everything here describes the design and the plan. Nothing is built or measured yet, so every outcome is a blank to fill from a real run in `docs/results/`.
 
@@ -8,13 +8,13 @@ Companion to [README.md](README.md). Everything here describes the design and th
 
 ### 30-second pitch
 
-Deckard is a regression-testing tool for LLM apps. You point it at an app, either an HTTP endpoint or a direct SDK call, and give it a YAML suite of test cases. It runs the cases, scores them with deterministic checks, an LLM judge, RAG metrics and a red-team pack, stores everything in SQLite, and compares the run to a baseline. In CI it fails the pull request when scores drop past a threshold. The part I care most about is that the judge is calibrated against human labels, so I can say how far to trust it, and that every run logs its own cost.
+EvalForge is a regression-testing tool for LLM apps. You point it at an app, either an HTTP endpoint or a direct SDK call, and give it a YAML suite of test cases. It runs the cases, scores them with deterministic checks, an LLM judge, RAG metrics and a red-team pack, stores everything in SQLite, and compares the run to a baseline. In CI it fails the pull request when scores drop past a threshold. The part I care most about is that the judge is calibrated against human labels, so I can say how far to trust it, and that every run logs its own cost.
 
 ### 2-minute walkthrough
 
 "The problem is that LLM apps regress silently. A prompt change or a model upgrade does not break any unit test, it just makes answers a bit worse, and you hear about it from users.
 
-So I built Deckard. A test suite is a YAML file. Each case has an input, sometimes a reference answer, and a list of scorers. Pydantic validates the file first, so a typo fails in a second instead of after I have paid for half a run.
+So I built EvalForge. A test suite is a YAML file. Each case has an input, sometimes a reference answer, and a list of scorers. Pydantic validates the file first, so a typo fails in a second instead of after I have paid for half a run.
 
 The runner is async Python. It calls the app through an adapter. For HTTP apps I template the request body and pull the answer and the retrieved chunks out with JSONPath, so I do not have to change the app. There are also adapters for the Anthropic and OpenAI SDKs.
 
@@ -24,9 +24,9 @@ Cost matters because I had about a hundred dollars of API budget. Claude Haiku i
 
 To know whether the judge is any good, I hand-labeled a small set and computed Cohen's kappa between the judge and my labels. [Fill in the measured kappa.]
 
-`deckard compare` diffs two runs case by case, and a GitHub Action runs it on every PR and fails the check if a scorer's mean drops more than the threshold or a case that used to pass now fails. There is also a small Next.js dashboard for runs, diffs and cost.
+`evalforge compare` diffs two runs case by case, and a GitHub Action runs it on every PR and fails the check if a scorer's mean drops more than the threshold or a case that used to pass now fails. There is also a small Next.js dashboard for runs, diffs and cost.
 
-The case study is my own RAG app, RAG_Project1. I ran the suite before and after a change and [fill in what moved and whether Deckard caught it]."
+The case study is my own RAG app, RAG_Project1. I ran the suite before and after a change and [fill in what moved and whether EvalForge caught it]."
 
 ---
 
@@ -35,13 +35,13 @@ The case study is my own RAG app, RAG_Project1. I ran the suite before and after
 | Tool | What it does here | Why this and not the alternative |
 |---|---|---|
 | Python 3.11 | Core package, runner, scorers, CLI, API | The LLM SDKs and eval ecosystem are Python-first. Not Go or TypeScript, because the scoring code reads more simply in Python and that is the interview language. |
-| Typer | `deckard run`, `compare`, `calibrate`, `baseline`, `serve` | Not argparse: Typer builds the CLI from type hints with less code. Not raw Click: Typer sits on Click and adds the type-hint layer. |
+| Typer | `evalforge run`, `compare`, `calibrate`, `baseline`, `serve` | Not argparse: Typer builds the CLI from type hints with less code. Not raw Click: Typer sits on Click and adds the type-hint layer. |
 | Pydantic v2 | Suite schema, result models, judge output schema, API responses | Not dataclasses: Pydantic validates and coerces input from YAML and from the LLM, with clear error messages. |
 | PyYAML | Loads suites, rubrics config, calibration labels | Not JSON: YAML allows comments and multi-line strings, which test authors need. Loaded with `safe_load` only. |
 | jsonschema | JSON Schema scorer | Not hand-written checks: JSON Schema is a standard the app team may already have. |
 | httpx | Async HTTP target adapter | Not requests: requests is sync. Not aiohttp: httpx has a requests-like API and good timeout control. |
 | anthropic SDK | Judge calls, Anthropic targets | Not LiteLLM: one less layer, typed responses with usage, and official support for tool use and prompt caching. |
-| openai SDK | OpenAI targets, embeddings for answer relevance | Official and typed. Kept as an alternative provider so Deckard is not tied to one vendor. |
+| openai SDK | OpenAI targets, embeddings for answer relevance | Official and typed. Kept as an alternative provider so EvalForge is not tied to one vendor. |
 | SQLite | Runs, results, scores, cost, judge cache, human labels | Not Postgres: one file, zero ops, easy to upload as a CI artifact. One team's eval history fits easily. |
 | FastAPI | Read-only JSON API for the dashboard | Not Flask: async, and it reuses the Pydantic models for response schemas and OpenAPI docs. |
 | Next.js + TypeScript + Tailwind | Dashboard: runs, run detail, compare, calibration | Not Streamlit: a real typed frontend shows full-stack range and gives control over the design. Not plain Vite React: App Router server components fetch data without a client state library. |
@@ -125,7 +125,7 @@ flowchart TB
         Labels["Human labels"]
         Base["Committed baseline JSON"]
     end
-    subgraph Core["deckard package"]
+    subgraph Core["evalforge package"]
         CLI["Typer CLI"]
         Runner["Async runner"]
         Targets["Target adapters"]
@@ -163,12 +163,12 @@ flowchart TB
 
 All LLM-based scoring goes through one judge client, which owns caching, escalation, structured output and cost logging.
 
-### Sequence of one `deckard run`
+### Sequence of one `evalforge run`
 
 ```mermaid
 sequenceDiagram
     actor Dev as Developer or CI
-    participant CLI as deckard CLI
+    participant CLI as evalforge CLI
     participant Runner
     participant App as LLM app under test
     participant Scorers
@@ -176,7 +176,7 @@ sequenceDiagram
     participant Haiku as claude-haiku-5-5
     participant Opus as claude-opus-5-5
     participant DB as SQLite
-    Dev->>CLI: deckard run suite.yaml
+    Dev->>CLI: evalforge run suite.yaml
     CLI->>CLI: validate suite with Pydantic
     CLI->>DB: insert run with status running
     loop each case, bounded by a semaphore
@@ -297,7 +297,7 @@ stateDiagram-v2
     Running --> Aborted: budget cap hit or interrupted
     Aborted --> Running: resume run
     Running --> Completed: all cases scored
-    Completed --> Compared: deckard compare
+    Completed --> Compared: evalforge compare
     Compared --> Passed: within thresholds
     Compared --> Regressed: drop past threshold
     Invalid --> [*]
@@ -314,16 +314,16 @@ flowchart TD
     PR["Pull request opened or updated"] --> CI["ci.yml: ruff, pytest, dashboard build"]
     PR --> Fork{"PR from a fork?"}
     Fork -->|yes| Skip["Eval job skipped, no secrets"]
-    Fork -->|no| Setup["eval.yml: install Deckard, start target"]
-    Setup --> Run["deckard run with --budget-usd"]
-    Run --> Cmp["deckard compare against baselines/suite.json"]
+    Fork -->|no| Setup["eval.yml: install EvalForge, start target"]
+    Setup --> Run["evalforge run with --budget-usd"]
+    Run --> Cmp["evalforge compare against baselines/suite.json"]
     Cmp --> Esc["Opus re-judges pass-to-fail flips"]
     Esc --> Report["Job summary and PR comment"]
     Report --> Gate{"Drop past threshold?"}
     Gate -->|yes| Fail["Check fails, merge blocked"]
     Gate -->|no| Pass["Check passes"]
     Pass --> Merge["Merge to main"]
-    Merge --> NewBase["Baseline updated in a reviewed PR via deckard baseline save"]
+    Merge --> NewBase["Baseline updated in a reviewed PR via evalforge baseline save"]
 ```
 
 The gate is a required status check. Baselines change only through a reviewed commit.
@@ -374,11 +374,11 @@ This is a plan for about three and a half weeks of focused work. Dates are place
 
 ### Project overview
 
-**1. What is Deckard in one sentence?**
+**1. What is EvalForge in one sentence?**
 A regression-testing tool for LLM apps: it runs a YAML suite against any app, scores the outputs with deterministic checks, a calibrated LLM judge, RAG metrics and red-team probes, and fails the pull request when scores drop past a threshold.
 
 **2. Who is it for and what problem does it solve?**
-It is for the engineer who owns an LLM feature, often a GenAI or forward-deployed engineer working inside a customer's codebase. The problem is that prompt, model and retriever changes cause quality regressions that no unit test catches. Deckard gives each change a score against a fixed suite and a stored baseline, so "it feels worse" becomes a diff with case ids.
+It is for the engineer who owns an LLM feature, often a GenAI or forward-deployed engineer working inside a customer's codebase. The problem is that prompt, model and retriever changes cause quality regressions that no unit test catches. EvalForge gives each change a score against a fixed suite and a stored baseline, so "it feels worse" becomes a diff with case ids.
 
 **3. Why build this when promptfoo, DeepEval, RAGAS and LangSmith exist?**
 Those are good tools and I studied them for the design. I built a small one to understand every part well enough to defend it: how a judge is calibrated, how RAG metrics are computed, how caching and escalation keep cost down. In a real job I would start with an existing tool and use this knowledge to configure and question it. I also made specific choices those tools do not all make by default, such as reporting judge-human kappa next to every judge score.
@@ -386,8 +386,8 @@ Those are good tools and I studied them for the design. I built a small one to u
 **4. What was the hardest part?**
 Making the LLM judge trustworthy. A judge that agrees with itself is easy, a judge that agrees with humans is not. The calibration set, the kappa report and reading every disagreement were the slow part, and they changed the rubrics. [Fill in a real example of a rubric change and its effect on kappa.]
 
-**5. How do you know Deckard itself works?**
-Three layers. Deterministic scorers, kappa, compare and the store have unit tests with known inputs and outputs, and LLM calls are mocked. The judge is checked against human labels with kappa. And in the case study I deliberately compare two versions of a real app and manually review every case Deckard flagged, to see whether the flags were right.
+**5. How do you know EvalForge itself works?**
+Three layers. Deterministic scorers, kappa, compare and the store have unit tests with known inputs and outputs, and LLM calls are mocked. The judge is checked against human labels with kappa. And in the case study I deliberately compare two versions of a real app and manually review every case EvalForge flagged, to see whether the flags were right.
 
 ### Design decisions and trade-offs
 
@@ -395,7 +395,7 @@ Three layers. Deterministic scorers, kappa, compare and the store have unit test
 Suites are data, and the people who write cases are not always the people who write code. YAML allows comments and multi-line text, diffs well in PRs, and Pydantic validates it at load time. The trade-off is less flexibility, so custom scorers are still Python functions registered by name.
 
 **7. Why SQLite and not Postgres?**
-The workload is one writer and a few readers, and the data for one team's eval history is small. SQLite is a single file with no server, which makes it trivial to upload as a CI artifact or open locally. WAL mode lets the dashboard read while a run writes. If several teams shared one Deckard server with concurrent runs, I would move to Postgres, and the repository layer keeps that change contained.
+The workload is one writer and a few readers, and the data for one team's eval history is small. SQLite is a single file with no server, which makes it trivial to upload as a CI artifact or open locally. WAL mode lets the dashboard read while a run writes. If several teams shared one EvalForge server with concurrent runs, I would move to Postgres, and the repository layer keeps that change contained.
 
 **8. Why normalize every scorer to a 0 to 1 score plus a pass flag?**
 One shape means compare, storage and the dashboard do not need special cases per scorer. The score supports mean deltas, and the pass flag supports counting new failures, which is often the more important signal. Each scorer owns its own threshold for pass, because a regex is binary while faithfulness is a fraction.
@@ -445,13 +445,13 @@ The suite gives a URL, headers (with secrets read from environment variables), a
 An `asyncio.Semaphore` caps in-flight calls. On a 429 or 5xx response the call retries with exponential backoff and jitter, and it waits at least as long as the `retry-after` header says. Each case has a timeout. After the last retry, the case is saved as an error so the run continues.
 
 **23. How do you track cost?**
-Every target and judge call records model, input tokens and output tokens from the SDK's usage fields. `pricing.yaml` holds per-model prices copied from the provider pages, and USD is computed per call and summed per run. For HTTP targets the app's own cost is only known if the app returns usage, otherwise only Deckard's judge cost is counted, and the dashboard says which.
+Every target and judge call records model, input tokens and output tokens from the SDK's usage fields. `pricing.yaml` holds per-model prices copied from the provider pages, and USD is computed per call and summed per run. For HTTP targets the app's own cost is only known if the app returns usage, otherwise only EvalForge's judge cost is counted, and the dashboard says which.
 
 **24. How does the PII leakage check work?**
 The test corpus is seeded with synthetic personal data generated for the test, so I know every value that must not appear. Probes try to get the app to reveal it. The scorer checks the output for exact seeded values and for PII patterns such as emails, phone numbers and card-shaped numbers that pass a Luhn check. It is deterministic, so it costs nothing and never flakes.
 
 **25. How does the GitHub Action fail a PR?**
-`deckard compare` exits with code 1 when a threshold is crossed, which fails the step and the job. The job is configured as a required status check in branch protection, so the PR cannot merge while it is red. Before failing, it writes the Markdown diff to the job summary and comments on the PR, so the author sees which cases broke.
+`evalforge compare` exits with code 1 when a threshold is crossed, which fails the step and the job. The job is configured as a required status check in branch protection, so the PR cannot merge while it is red. Before failing, it writes the Markdown diff to the job summary and comments on the PR, so the author sees which cases broke.
 
 **26. How do you test code that calls LLMs without spending money?**
 The judge client and SDK targets are behind small interfaces, and tests inject a fake that returns fixed responses with fixed token counts. That tests parsing, caching, escalation logic and cost math deterministically. A separate, manually triggered smoke test makes a handful of real calls.
@@ -498,8 +498,8 @@ Read every disagreement, grouped by direction. If the judge passes cases humans 
 **38. Tell me about a project where you caught a problem before users did. (STAR)**
 - Situation: my RAG document QA app, RAG_Project1, was about to get a change to [retriever or prompt change].
 - Task: show whether the change made answers better or worse, with numbers, before merging.
-- Action: built Deckard, wrote a suite of [N] cases with reference answers and the red-team pack, calibrated the judge against [N] hand labels, and ran the suite before and after the change.
-- Result: [measured before and after scores], [what Deckard flagged], [whether the flags held up on manual review], judge kappa [measured].
+- Action: built EvalForge, wrote a suite of [N] cases with reference answers and the red-team pack, calibrated the judge against [N] hand labels, and ran the suite before and after the change.
+- Result: [measured before and after scores], [what EvalForge flagged], [whether the flags held up on manual review], judge kappa [measured].
 
 **39. Tell me about a trade-off where you cut scope.**
 - Situation: the first design had Postgres, Redis, OpenTelemetry, synthetic case generation and a multi-provider wrapper.
@@ -540,7 +540,7 @@ Read every disagreement, grouped by direction. If the judge passes cases humans 
 
 Templates only. Replace every bracket with a measured number from `docs/results/` before using them.
 
-- Built Deckard, an open-source LLM regression-testing tool (Python, Typer, FastAPI, SQLite, Next.js) that runs YAML suites against any LLM app with deterministic, LLM-judge, RAG and red-team scorers, and gates pull requests in GitHub Actions when scores drop more than [measured threshold].
+- Built EvalForge, an open-source LLM regression-testing tool (Python, Typer, FastAPI, SQLite, Next.js) that runs YAML suites against any LLM app with deterministic, LLM-judge, RAG and red-team scorers, and gates pull requests in GitHub Actions when scores drop more than [measured threshold].
 - Calibrated an LLM-as-a-judge against [N] human-labeled cases, reaching Cohen's kappa of [measured kappa] for Claude Haiku and [measured kappa] for Claude Opus, and cut judge cost to [measured USD] per 100 cases using result caching and Opus escalation only for [measured percent] of cases.
 - Evaluated a RAG document QA app before and after a retrieval change, measuring faithfulness [before] to [after] and context recall [before] to [after], and caught [measured number] regressions before merge.
 
