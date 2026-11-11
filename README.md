@@ -178,7 +178,7 @@ A small Next.js App Router app with TypeScript and Tailwind, reading the FastAPI
 Planned layout:
 
 ```
-evalforge-llmops/
+EvalForge-LLMOps/
 ├── evalforge/
 │   ├── cli.py              # Typer app: run, compare, calibrate, baseline, serve
 │   ├── suite.py            # Pydantic models for suites and cases
@@ -217,8 +217,8 @@ This is the target workflow once Phase 1 lands. None of it runs yet.
 **Prerequisites:** Python 3.11, [uv](https://docs.astral.sh/uv/), Docker with Compose, Node 20 (only for dashboard work outside Docker), an Anthropic API key. An OpenAI key is optional (OpenAI targets and embeddings for answer relevance).
 
 ```bash
-git clone https://github.com/striderzz/evalforge-llmops.git
-cd evalforge-llmops
+git clone https://github.com/striderzz/EvalForge-LLMOps.git
+cd EvalForge-LLMOps
 cp .env.example .env        # set ANTHROPIC_API_KEY, optionally OPENAI_API_KEY
 make up                     # docker compose up: API on :8787, dashboard on :3000
 ```
@@ -278,8 +278,8 @@ The case study evaluates [striderzz/RAG_Project1](https://github.com/striderzz/R
 ## Related projects
 
 - [RAG_Project1](https://github.com/striderzz/RAG_Project1): the RAG document QA app evaluated in the case study
-- [IncidentIQ AgentOps](https://github.com/striderzz/incidentiq-agentops): an agentic app whose incident summaries are a natural next target for a EvalForge suite
-- [FraudSight MLOps](https://github.com/striderzz/fraudsight-mlops): the same idea of gating a deploy on measured quality, applied to a classic ML model
+- [IncidentIQ AgentOps](https://github.com/striderzz/IncidentIQ-AgentOps): an agentic app whose incident summaries are a natural next target for a EvalForge suite
+- [FraudSight MLOps](https://github.com/striderzz/FraudSight-MLOps): the same idea of gating a deploy on measured quality, applied to a classic ML model
 
 ## Author
 
