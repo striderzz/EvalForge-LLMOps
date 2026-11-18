@@ -283,7 +283,7 @@ The case study evaluates [striderzz/RAG_Project1](https://github.com/striderzz/R
 ## Related projects
 
 - [RAG_Project1](https://github.com/striderzz/RAG_Project1): the RAG document QA app evaluated in the case study
-- [IncidentIQ AgentOps](https://github.com/striderzz/IncidentIQ-AgentOps): an agentic app whose incident summaries are a natural next target for a EvalForge suite
+- [SafeFlight AgentOps](https://github.com/striderzz/SafeFlight-AgentOps): a CrewAI multi-agent app whose airline-safety recommendations are a natural next target for an EvalForge suite
 - [FraudSight MLOps](https://github.com/striderzz/FraudSight-MLOps): the same idea of gating a deploy on measured quality, applied to a classic ML model
 
 ## Author
