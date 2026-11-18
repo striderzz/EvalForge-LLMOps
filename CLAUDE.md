@@ -1,6 +1,6 @@
 # CLAUDE.md: EvalForge LLMOps build guide
 
-This file tells Claude (Claude Code) how to build this project. Read **README.md** first: it is the design spec. This file is the build plan. **INFO.md** is the interview prep companion; keep it in sync when a design decision changes.
+This file tells Claude (Claude Code) how to build this project. Read **README.md** first: it is the design spec. This file is the build plan. **INFO.md** (overview, system design, workflows) and **INTERVIEW.md** (interview Q&A) are the companions.; keep it in sync when a design decision changes.
 
 ## Goal
 
@@ -49,7 +49,7 @@ Do not start these until Phase 8 is done.
 
 - Build **one phase at a time**, in the order above. Each phase must run end to end before the next starts.
 - After each phase, update the **Roadmap checklist in README.md** and commit with a clear message.
-- **Never invent results.** Every number in README.md and INFO.md (kappa, scores, cost, run time, latency) must come from a run in this repo. Put the raw output in `docs/results/`. Until then, leave the placeholder `—`.
+- **Never invent results.** Every number in README.md, INFO.md and INTERVIEW.md (kappa, scores, cost, run time, latency) must come from a run in this repo. Put the raw output in `docs/results/`. Until then, leave the placeholder `—`.
 - Keep cost low: `claude-haiku-5-5` is the default judge, `claude-opus-5-5` only for calibration and escalation, cache judge calls, keep eval sets small, log tokens and USD for every call, and pass a budget cap on every real run. The total API budget is about $100.
 - Tests never call real LLM APIs. Mock the clients.
 - Keep secrets out of git: use `.env` (gitignored) plus a committed `.env.example`.
@@ -73,4 +73,4 @@ Do not start these until Phase 8 is done.
 
 ## Status
 
-Only `README.md`, `INFO.md` and this file exist so far. Start at **Phase 1**.
+Only `README.md`, `INFO.md`, `INTERVIEW.md` and this file exist so far. Start at **Phase 1**.

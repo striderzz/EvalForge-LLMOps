@@ -275,6 +275,11 @@ The case study evaluates [striderzz/RAG_Project1](https://github.com/striderzz/R
 - Gemini and Ollama targets
 - A hosted read-only demo of the dashboard on Vercel
 
+## Docs
+
+- [INFO.md](INFO.md): high-level overview, system design (architecture, data model) and workflow diagrams.
+- [INTERVIEW.md](INTERVIEW.md): 30-second and 2-minute pitches, interview questions with answers, resume bullets.
+
 ## Related projects
 
 - [RAG_Project1](https://github.com/striderzz/RAG_Project1): the RAG document QA app evaluated in the case study
